@@ -1,5 +1,5 @@
 /**
- * angular-sofa-price - v0.1.0 - Wed Jan 07 2015 15:16:39 GMT+0100 (CET)
+ * angular-sofa-price - v0.1.0 - Wed Jan 07 2015 15:29:45 GMT+0100 (CET)
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors

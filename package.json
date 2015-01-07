@@ -1,6 +1,6 @@
 {
   "name": "angular-sofa-price",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sofa Web SDK Angular Price component.",
   "main": "dist/sofaPrice.js",
   "homepage": "http://www.sofa.io",
