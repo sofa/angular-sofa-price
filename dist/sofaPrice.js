@@ -1,5 +1,5 @@
 /**
- * angular-sofa-price - v0.1.0 - Wed Jan 07 2015 15:29:45 GMT+0100 (CET)
+ * angular-sofa-price - v0.1.1 - Wed Jan 21 2015 18:21:07 GMT+0100 (CET)
  * http://www.sofa.io
  *
  * Copyright (c) 2014 CouchCommerce GmbH (http://www.couchcommerce.com / http://www.sofa.io) and other contributors
@@ -9,10 +9,11 @@
 ;(function (angular) {
 angular.module('sofa-price.tpl.html', []).run(['$templateCache', function($templateCache) {
   $templateCache.put('sofa-price.tpl.html',
-    '<span class="sofa-price" ng-class="product.hasOldPrice() ? \'sofa-price--special\' : \'sofa-price--basic\'">\n' +
-    '    <span class="sofa-price__price--old" ng-if="product.hasOldPrice()" ng-bind="priceOld | currency"></span>\n' +
-    '    <span class="sofa-price__price" ng-bind="price | currency"></span>\n' +
-    '</span>');
+    '<span class="sofa-price" ng-class="priceController.hasSpecialPrice() ? \'sofa-price--special\' : \'sofa-price--basic\'">\n' +
+    '    <span class="sofa-price__price--old" ng-if="priceController.hasSpecialPrice()" ng-bind="priceController.oldPrice | currency"></span>\n' +
+    '    <span class="sofa-price__price" ng-bind="priceController.price | currency"></span>\n' +
+    '</span>\n' +
+    '');
 }]);
 
 /**
@@ -33,8 +34,10 @@ angular.module('sofa.price', ['sofa-price.tpl.html'])
  *
  * @description
  *
- * The `sofaPrice` directives takes care of updating a products price when it
- * changes due to updates in an existing variant selector.
+ * The `sofaPrice` directives displays either a normal price
+ * or a combination of "special price" and "old price", by passing it
+ * a normal price and optionally a "special price".
+ *
  */
 .directive('sofaPrice', function() {
 
@@ -43,30 +46,33 @@ angular.module('sofa.price', ['sofa-price.tpl.html'])
     return {
         restrict: 'E',
         replace: true,
-        scope: {
-            product: '=',
-            selectedVariant: '=?'
-        },
-        templateUrl: 'sofa-price.tpl.html',
-        link: function ($scope) {
+        controller: ["$scope", function ($scope) {
+            var self = this;
 
-            // We can't have the template directly bind to the product.price because
-            // that's leaving out the selected variant which changes dynamically
-            // outside of the product model.
-
-            // So what we need to do is to listen manually for changes on the product or
-            // the variant and then update the price on our isolated scope.
-            var updatePrices = function() {
-                $scope.price = $scope.product.price;
-                $scope.priceOld = $scope.product.priceOld;
-
-                if ($scope.selectedVariant && $scope.selectedVariant.price !== undefined) {
-                    $scope.price = $scope.selectedVariant.price;
-                }
+            self.hasSpecialPrice = function () {
+                return !!($scope.specialPrice && $scope.specialPrice !== $scope.price);
             };
 
-            $scope.$watch('product', updatePrices);
-            $scope.$watch('selectedVariant', updatePrices);
+            self.setPrices = function () {
+                self.price = self.hasSpecialPrice() ?  $scope.specialPrice : $scope.price;
+                self.oldPrice = self.hasSpecialPrice() ? $scope.price : null;
+            };
+        }],
+        controllerAs: 'priceController',
+        scope: {
+            price: '=',
+            specialPrice: '=?'
+        },
+        templateUrl: 'sofa-price.tpl.html',
+        link: function (scope, element, attrs, ctrl) {
+            ctrl.setPrices();
+
+            scope.$watchCollection('[price, specialPrice]', function (nv, ov) {
+                if (nv !== ov) {
+                    ctrl.setPrices();
+                }
+            });
+
         }
     };
 });
